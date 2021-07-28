@@ -232,6 +232,8 @@ class OpenIDConnect extends PluggableAuth {
 					self::OIDC_SUBJECT_SESSION_KEY, $this->subject );
 				$authManager->setAuthenticationSessionData(
 					self::OIDC_ISSUER_SESSION_KEY, $this->issuer );
+				$userInfo = $oidc.requestUserInfo();
+				$authManager->setAuthenticationSessionData('o9_groups', $userInfo->groups);
 				return true;
 			}
 
@@ -491,4 +493,26 @@ class OpenIDConnect extends PluggableAuth {
 				'...user table does not have subject and issuer columns.' . PHP_EOL );
 		}
 	}
+	
+	public static function populateGroups(User $user) {
+
+        if ( method_exists( MediaWikiServices::class, 'getAuthManager' ) ) {
+            // MediaWiki 1.35+
+            $authManager = MediaWikiServices::getInstance()->getAuthManager();
+        } else {
+            $authManager = AuthManager::singleton();
+        }
+        $o9Groups = $authManager->getAuthenticationSessionData('o9_groups');
+
+       $currentGroups = user->getGroups();
+		$groupsToAdd = array_diff( $o9Groups, $currentGroups );
+		foreach ( $groupsToAdd as $groupToAdd ) {
+			$this->user->addGroup( $groupToAdd );
+		}
+
+		$groupsToRemove = array_diff( $currentGroups, $o9Groups );
+		foreach ( $groupsToRemove as $groupToRemove ) {
+			$this->user->removeGroup( $groupToRemove );
+		}
+    }
 }
