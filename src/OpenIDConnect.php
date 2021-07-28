@@ -233,7 +233,7 @@ class OpenIDConnect extends PluggableAuth {
 				$authManager->setAuthenticationSessionData(
 					self::OIDC_ISSUER_SESSION_KEY, $this->issuer );
 				$userInfo = $oidc.requestUserInfo();
-				$authManager->setAuthenticationSessionData('o9_groups', $userInfo->groups);
+				$authManager->setAuthenticationSessionData('wikimedia_groups', $userInfo->groups);
 				return true;
 			}
 
@@ -502,15 +502,15 @@ class OpenIDConnect extends PluggableAuth {
         } else {
             $authManager = AuthManager::singleton();
         }
-        $o9Groups = $authManager->getAuthenticationSessionData('o9_groups');
+        $wikiMediaGroups = $authManager->getAuthenticationSessionData('wikimedia_groups');
 
        $currentGroups = user->getGroups();
-		$groupsToAdd = array_diff( $o9Groups, $currentGroups );
+		$groupsToAdd = array_diff( $wikiMediaGroups, $currentGroups );
 		foreach ( $groupsToAdd as $groupToAdd ) {
 			$this->user->addGroup( $groupToAdd );
 		}
 
-		$groupsToRemove = array_diff( $currentGroups, $o9Groups );
+		$groupsToRemove = array_diff( $currentGroups, $wikiMediaGroups );
 		foreach ( $groupsToRemove as $groupToRemove ) {
 			$this->user->removeGroup( $groupToRemove );
 		}
